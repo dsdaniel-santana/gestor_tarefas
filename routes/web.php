@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Main;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,3 +32,5 @@ die ('Não foi possivel conectar ao DB.' . $e->getMessage());
 
 
 });
+
+Route::get('/main', [Main::class, 'index']);
