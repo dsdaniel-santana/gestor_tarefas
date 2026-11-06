@@ -34,3 +34,5 @@ die ('Não foi possivel conectar ao DB.' . $e->getMessage());
 });
 
 Route::get('/main', [Main::class, 'index']);
+Route::get('/users', [Main::class, 'users']);
+Route::get('/view', [Main::class, 'view']);
