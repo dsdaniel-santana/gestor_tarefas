@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Model\UserModel;
+//use App\Model\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -10,29 +10,34 @@ class Main extends Controller
 {
     public function index()
     {
-        return view('main');
+        echo 'Gestor de Tarefas';
     }
 
-    public function users()
-    {
-        // get users with raw sql
-        // $users = DB::select('SELECT * FROM users');
-        // dd($users);
-
-        // Using Eloquent ORM - Using Model
-        $model = new UserModel ();
-        $users = $model->all();
-
-        dd($users);
-    }
-
-    public function view()
+    public function login()
     {
         $data = [
-            'title' => 'Título da página'
+            'title' => 'Login'
         ];
 
-        return view('home', $data);
+        return view('login_frm', $data);
     }
+
+    public function login_submit()
+    {
+        echo 'Subimissão do login';
+    }
+
+    //main page
+    public function main()
+    {
+        $data = [
+            'title' => 'Main'
+        ];
+
+        return view('main', $data);
+
+    }
+
+
 
 }
