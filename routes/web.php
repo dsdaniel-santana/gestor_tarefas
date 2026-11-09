@@ -14,18 +14,19 @@ use App\Http\Controllers\Main;
 |
 */
 
+Route::middleware('CheckLogout')->group(function(){
 
-
-//login routes
+//out app
 Route::get('/login', [Main::class, 'login'])->name('login');
 Route::post('/login_submit', [Main::class, 'login_submit'])->name('login_submit');
+});
 
-// route with middleware
+
+//in app
 Route::middleware('CheckLogin')->group(function(){
     
-    Route::get('/', [Main::class, 'index'])->name('index');
-    Route::get('/main', [Main::class, 'main'])->name('main');
-
+    Route::get('/', [Main::class, 'index'])->name('index');    
+    Route::get('/logout', [Main::class, 'logout'])->name('logout');
 
 });
 

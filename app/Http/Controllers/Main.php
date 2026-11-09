@@ -10,7 +10,11 @@ class Main extends Controller
 {
     public function index()
     {
-        echo 'Gestor de Tarefas';
+        $data = [
+            'title' => 'Gestor de Tarefas'
+        ];
+
+        return view ('main', $data);
     }
 
     public function login()
@@ -24,7 +28,8 @@ class Main extends Controller
 
     public function login_submit()
     {
-        echo 'Subimissão do login';
+        session()->put('username', 'admin');
+        echo 'Logado';
     }
 
     //main page
@@ -36,6 +41,13 @@ class Main extends Controller
 
         return view('main', $data);
 
+    }
+
+    //logout
+    public function logout()
+    {
+        session()->forget('username');
+        return redirect()->route('login');
     }
 
 
