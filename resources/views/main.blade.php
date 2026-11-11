@@ -18,13 +18,13 @@
             </div>
             
 
-            @if($tasks->count() != 0)
+            @if(count($tasks) != 0)
 
                 <table class="table table-striped table-bordered" id="table_tasks" width="100%">
                     <thead class="table-dark">
                         <tr>
-                            <th class="w-50">Tarefa</th>
-                            <th class="w-25 text-center">Status</th>
+                            <th class="w-75">Tarefa</th>
+                            <th class="text-center">Status</th>
                             <th></th>
                         </tr>
 
@@ -45,8 +45,8 @@
             data: @json($tasks),
             columns:[
                 {data: 'task_name'},
-                {data: 'task_status'},
-                {data: 'id'},
+                {data: 'task_status', className:'text-center'},
+                {data: 'task_actions', className:'text-center'},
             ]    
         });
     });
