@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TaskModel;
 use App\Models\UserModel;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 
@@ -21,10 +22,39 @@ class Main extends Controller
         $data = [
             'title' => 'Gestor de Tarefas',
             'datatables' => true,
-            'tasks' => $this->_get_tasks()
+            //'tasks' => $this->_get_tasks()
         ];
 
-        return view ('main', $data);
+        // check if there is a search
+        if(session('search')){
+            
+            $data['search'] = session('search');
+            $data['tasks'] = $this->_get_tasks(session('tasks'));
+
+            // clear session
+            session()->forget('search');
+            session()->forget('tasks');
+
+        } else if (session('filter')) {
+
+            $data['filter'] = session('filter');
+            $data['tasks'] = $this->_get_tasks(session('tasks'));
+
+            // clear session
+            session()->forget('filter');
+            session()->forget('tasks');
+
+        } else {
+
+            // get all tasks
+            $model = new TaskModel();
+            $tasks = $model->where('id_user','=', session('id'))
+                           ->whereNull('deleted_at')
+                           ->get();
+            $data['tasks'] = $this->_get_tasks($tasks);
+        }
+        
+        return view('main', $data);
     }
 
 
@@ -182,6 +212,7 @@ class Main extends Controller
 
     public function edit_task_submit(Request $resquest)
     {
+
         
         //form validation
         $resquest->validate([        
@@ -242,22 +273,125 @@ class Main extends Controller
 
 
            
+    }
+
+    //========================================
+    // search & sort
+    //========================================
+    public function search_submit(Request $request)
+    {
+        // get data from form
+        $search = $request->input('text_search');
+
+        // get tasks
+        $model = new TaskModel();
+        if($search == ''){
+            $tasks = $model
+                ->where('id_user','=', session('id'))
+                ->whereNull('deleted_at')
+                ->get();
+        } else {
+
+            $tasks = $model
+                ->where('id_user','=', session('id'))
+                ->where(function($query) use ($search) {
+            $query->where('task_name','like', '%' . $search . '%')
+                ->orWhere('task_description','like', '%' . $search . '%');                                
+                })
+                ->whereNull('deleted_at')
+                ->get();
         }
+
+        session()->put('tasks', $tasks);
+        session()->put('search', $search);
+
+        return redirect()->route('index');
+    }
+
+    public function filter($status)
+    {
+        // decrypt $status
+        try {
+            $status = Crypt::decrypt($status);
+        } catch (\Exception $e) {
+            return redirect()->route('index');
+        }
+
+        // get tasks
+        $model = new TaskModel();
+        if($status == 'all') {
+            $tasks = $model->where('id_user','=',session('id'))
+                           ->whereNull('deleted_at')
+                           ->get();
+        } else {
+            $tasks = $model->where('id_user','=',session('id'))
+                           ->where('task_status','=',$status)
+                           ->whereNull('deleted_at')
+                           ->get();
+        }
+
+        session()->put('tasks', $tasks);
+        session()->put('filter', $status);
+
+        return redirect()->route('index');
+    }
+    //========================================
+    // delete task
+    //========================================
     
+    public function delete_task($id)
+    {
+        try {
+            $id = Crypt::decrypt($id);
+        } catch (\Exception $e) {
+            return redirect()->route('index');
+        }
+
+        // get task data
+        $model = new TaskModel();
+        $task = $model->where('id','=',$id)->first();
+        if(!$task){
+            return redirect()->route('index');
+        }
+
+        $data = [
+            'title' => 'Excluir Tarefa',
+            'task' => $task
+        ];
+
+        return view('delete_task', $data);
+    }
+
+    public function delete_task_confirm($id)
+    {
+        $id_task = null;
+        try {
+            $id_task = Crypt::decrypt($id);
+        } catch (\Exception $e) {
+            return redirect()->route('index');
+        }
+
+        // delete task (soft delete)
+        $model = new TaskModel();
+        $model->where('id','=',$id_task)
+              ->update([
+                'deleted_at' => date('Y-m-d H:i:s')
+              ]);
+
+        return redirect()->route('index');
+    }
 
 
+
+   
+   
     //========================================
     //private methods
     //========================================
 
-    private function _get_tasks()
+    private function _get_tasks($tasks)
     {
-        $model = new TaskModel();
-
-        $tasks = $model
-            ->where('id_user', '=', session('id'))
-            ->whereNull('deleted_at')
-            ->get();
+        
 
         $collection = [];
 
