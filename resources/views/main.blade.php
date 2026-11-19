@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container">
+<div class="container mb-3">
     <div class="row mt-5">
         <div class="col">
 
@@ -22,11 +22,11 @@
 
                             <label class="me-2 align-self-center">Status</label>
                             <select name="filter" id="filter">
-                                <option value="all">Todos</option>
-                                <option value="new">Nova</option>
-                                <option value="in_progress">Em Progresso</option>
-                                <option value="cancelled">Cancelada</option>
-                                <option value="completed">Concluída</option>
+                                <option value="{{ Crypt::encrypt('all') }}" @php echo (!empty($filter) && $filter == 'all') ? 'selected' : '' @endphp>Todos</option>
+                                <option value="{{ Crypt::encrypt('new') }}" @php echo (!empty($filter) && $filter == 'new') ? 'selected' : '' @endphp>Nova</option>
+                                <option value="{{ Crypt::encrypt('in_progress') }}" @php echo (!empty($filter) && $filter == 'in_progress') ? 'selected' : '' @endphp>Em progresso</option>
+                                <option value="{{ Crypt::encrypt('cancelled') }}" @php echo (!empty($filter) && $filter == 'cancelled') ? 'selected' : '' @endphp>Cancelada</option>
+                                <option value="{{ Crypt::encrypt('completed') }}" @php echo (!empty($filter) && $filter == 'completed') ? 'selected' : '' @endphp>Concluída</option>
 
                             </select>
 
@@ -44,7 +44,7 @@
             @if(count($tasks) != 0)
 
                 <table class="table table-striped table-bordered" id="table_tasks" width="100%">
-                    <thead class="table-dark">
+                    <thead class="table-primary">
                         <tr>
                             <th class="w-75">Tarefa</th>
                             <th class="text-center">Status</th>
@@ -68,10 +68,16 @@
             data: @json($tasks),
             columns:[
                 {data: 'task_name'},
-                {data: 'task_status', className:'text-center'},
-                {data: 'task_actions', className:'text-center'},
+                {data: 'task_status', className:'text-center align-middle'},
+                {data: 'task_actions', className:'text-center align-middle'},
             ]    
         });
+    });
+
+    let filter = document.querySelector("#filter");
+    filter.addEventListener('change', () => {
+        let value = filter.value;
+        window.location.href = "{{ url('/filter') }}" + "/" + value;
     });
 
    

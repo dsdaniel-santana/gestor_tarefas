@@ -164,7 +164,10 @@ class Main extends Controller
             ->first();
         if($task)
         {
-            return redirect()->route('new_task')->with('task_error', 'Já existe uma tarefa com esse mesmo nome');
+            return redirect()
+            ->route('new_task')
+            ->withInput()
+            ->with('task_error', 'Já existe uma tarefa com esse mesmo nome');
         }
 
         // insert new task
@@ -308,6 +311,7 @@ class Main extends Controller
         return redirect()->route('index');
     }
 
+
     public function filter($status)
     {
         // decrypt $status
@@ -388,25 +392,24 @@ class Main extends Controller
     //========================================
     //private methods
     //========================================
-
-    private function _get_tasks($tasks)
+private function _get_tasks($tasks)
     {
-        
-
         $collection = [];
 
         foreach($tasks as $task){
 
             $link_edit = '<a href="' . route('edit_task', ['id' => Crypt::encrypt($task->id)]) . '" class="btn btn-secondary m-1"><i class="bi bi-pencil-square"></i></a>';
             $link_delete = '<a href="' . route('delete_task', ['id' => Crypt::encrypt($task->id)]) . '" class="btn btn-secondary m-1"><i class="bi bi-trash"></i></a>';
-            $collection [] = [
-                'task_name' => $task->task_name,
+
+            $collection[] = [
+                // 'task_name' => $task->task_name,
+                'task_name' => '<span class="task-title">' . $task->task_name . '</span><br><small class="opacity-50">' . $task->task_description . '</small>',
                 'task_status' => $this->_status_name($task->task_status),
                 'task_actions' => $link_edit . $link_delete
-            ];            
+            ];
         }
-            return $collection;
 
+        return $collection;
     }
 
     private function _status_name($status)
@@ -418,10 +421,23 @@ class Main extends Controller
             'completed' => 'Concluída',
         ];
         if(key_exists($status, $status_collection))
-            return $status_collection[$status];
-        else 
-            return 'Desconhecido';
-        
+            return '<span class="' . $this->_status_badge($status) . '"> ' . $status_collection[$status] . '</span>';
+        else
+            return '<span class="' . $this->_status_badge('Desconhecido') . '">Desconhecido</span>';
     }
 
+    private function _status_badge($status)
+    {
+        $status_collection = [
+            'new' => 'badge bg-primary',
+            'in_progress' => 'badge bg-success',
+            'cancelled' => 'badge bg-danger',
+            'completed' => 'badge bg-secondary',
+        ];
+        if(key_exists($status, $status_collection)){
+            return $status_collection[$status];
+        } else {
+            return 'badge bg-secondary';
+        }
+    }
 }
